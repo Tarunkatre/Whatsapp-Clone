@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wattsapp clone</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+
+    #main {
+      font-family: 'Gilroy', sans-serif;
+      position: relative;
+    }
+
+    #top {
+      height: 100vh;
+      width: 100vw;
+      background-color: #E3E2DE;
+    }
+
+    #top-top {
+      width: 100%;
+      height: 14%;
+      background-color: #00A884;
+    }
+
+    .container {
+      position: absolute;
+      height: 95%;
+      width: 95%;
+      transform: translate(-50%, -50%);
+      left: 50%;
+      top: 50%;
+      background-color: #ffffff;
+      z-index: 9;
+    }
+  </style>
+</head>
+
+<body contextmenu="return false">
+  <div id="main">
+    <div id="top">
+      <div id="top-top"></div>
+      <div class="container flex">
+        <div class="left h-full border-r-2 w-1/3 bg-white">
+          <div class="nav  h-16 w-full bg-slate-100 flex items-center justify-stretch">
+            <div class="profile-pic overflow-hidden ml-4  h-12 w-12 rounded-full">
+              <img class="w-full h-full object-cover" src="../images/upload/<%=user.picture%>" alt="">
+            </div>
+            <div class="info w-1/3 h-3/4 ms-4 ml-1">
+              <div class="number w-full h-1/2 flex items-center justify-normal">
+                <h1><%= user.number%></h1>
+              </div>
+              <div class="username w-full h-1/2 flex items-center justify-normal">
+                <h5><%= user.username%></h5>
+              </div>
+            </div>
+            <div onclick="createGroup()" class="addGroup active:bg-slate-500 bg-white-500 w-10 h-10 ms-auto me-4 border-2 border-slate flex items-center justify-center text-lg rounded-full cursor-pointer hover:bg-black hover:text-white">+</div>
+          </div>
+          <div class="msgbox w-full h-auto">
+          </div>
+        </div>
+        <div class="right h-full w-2/3 bg-orange-50">
+          <div class="nav h-16 w-full bg-slate-100 flex items-center justify-normal">
+            <div class="overflow-hidden ml-4 h-12 w-12 rounded-full">
+              <img style="display: none;" class="conv-img w-full h-full object-cover" src="" alt="">
+            </div>
+            <div class="info w-3/4 h-3/4 ms-4 ml-1">
+              <div class=" w-full h-full flex items-center justify-normal">
+                <h1 id="conv-name" class="text-sm w-auto">Welcome! <%= user.username%> Click on the user tile to get started✌️</h1>
+              </div>
+            </div>
+          </div>
+          <div class="chatarea" style="display: none;">
+            <div class="conversation w-full h-[36rem] px-2 py-2">
+            </div>
+            <div class="entermsg w-full h-10 bg-slate-100 flex items-center justify-normal">
+              <input type="text" class="border-2 h-[2rem] text-sm font-sans rounded-lg w-[52rem] outline-0 ps-12" placeholder=" Enter the message">
+              <button onclick="sendmsg()" class="px-3 py-1 text-sm bg-green-600 border-2 text-white font-semibold rounded-lg hover:text-green-400 hover:bg-white hover:border-green-400">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    socket.emit('server', `<%= user.username %>`)
+    var currentUserid = '<%= user._id %>';
+    var currentChatuserid = null;
+
+
+    function sendmsg() {
+      const message = document.querySelector('input').value;
+      //Ye function return kr dega agar message empty hai toh ya fir message empty hone pr send nhi hoga
+      if (!message) {
+        return;
+      }
+      var temp = ` <div class="outgoing py-1 px-3 mt-1 font-sans text-sm h-8 w-fit bg-green-200 rounded-lg ms-auto">
+        <h1>${message}</h1>
+      </div>`
+      document.querySelector('.conversation').innerHTML += temp;
+
+      var msg = {
+        message: message,
+        reciever: currentChatuserid,
+        sender: currentUserid
+      }
+      socket.emit('message', msg)
+      document.querySelector('input').value = ''
+    }
+
+    function showSentmessage(message) {
+      var temp = ` <div class="outgoing py-1 px-3 mt-1 font-sans text-sm h-8 w-fit bg-green-200 rounded-lg ms-auto">
+         <h1>${message}</h1>
+       </div>`
+      document.querySelector('.conversation').innerHTML += temp;
+    }
+
+    function recievemsg(enter) {
+      var temp = `<div class="outgoing py-1 px-3 mt-1 font-sans text-sm h-8 w-fit bg-white rounded-lg">
+        <h1>${enter}</h1>
+      </div>`
+      document.querySelector('.conversation').innerHTML += temp;
+      document.querySelector('.msg-recieved').textContent = enter;
+    }
+
+
+    socket.on('onlineUser', msg => {
+      newChat(msg.img, msg.message, msg.name, msg.id)
+    })
+
+    function newChat(img, message, user, id) {
+      if (!document.querySelector(`#a${id}`)) {
+        const temp = `<div id='a${id}' onclick = "conversation('${img}','${user}','${id}')" class="contact h-full p-2 w-full flex cursor-pointer items-center border-b-2 justify-normal">
+         <div class="profile-pic overflow-hidden ml-4 h-12 w-12 rounded-full">
+           <img class="w-full h-full object-cover" src="../images/upload/${img}" alt="">
+         </div>
+         <div class="info w-1/3 h-3/4 ms-4 ml-1">
+           <div class="username font-semibold w-full h-1/2 flex items-center justify-normal">
+             <h1>${user}</h1>
+           </div>
+           <div class="msg-recieved w-full italic h-1/2 flex items-center justify-normal">
+             <h5>${message}</h5>
+           </div>
+         </div>
+       </div>`
+
+        document.querySelector('.msgbox').innerHTML += temp;
+      }
+    }
+
+    function conversation(img, name, id) {
+      document.querySelector('.conv-img').style.display = 'initial';
+        document.querySelector('.conv-img').setAttribute('src', `../images/upload/${img}`);
+        document.querySelector('#conv-name').textContent = name;
+        document.querySelector('.chatarea').style.display = 'initial';
+        currentChatuserid = id;
+        socket.emit('chatdetails', {
+          secondUser: currentChatuserid,
+          firstUser: currentUserid
+        })
+    }
+
+    function createGroup(){
+      var groupName = prompt('Enter group name')
+      if(!groupName) return;
+      
+      socket.emit('createGroup',{
+        groupName,
+        currentUserid
+      })
+    }
+
+    socket.on('golu', msg => {
+    if(msg.sender == currentChatuserid)
+    recievemsg(msg.message);
+    })
+
+    socket.on('chatdetails', history => {
+      
+      document.querySelector('.conversation').innerHTML = "";
+
+      history.forEach(elem => {
+        if (elem.sender == currentUserid) {
+          showSentmessage(elem.message)
+        } else
+        recievemsg(elem.message)
+      })
+    })
+  </script>
+</body>
+
+</html>
