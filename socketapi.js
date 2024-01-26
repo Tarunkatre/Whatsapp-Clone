@@ -38,10 +38,29 @@ io.on("connection", function (socket) {
     })
     
     socket.on("server", async function(username){
+
         const currentUser = await UserModel.findOne({username:username});
         currentUser.socketId = socket.id;
         await currentUser.save();
         
+        const allGroup = await GroupModel.find({
+            members: {
+                $in: [
+                    currentUser._id
+                ]
+            }
+        })
+
+        allGroup.forEach(group => {
+            socket.emit('allGroup',{
+                img: group.picture,
+                name: group.groupName,
+                message: 'hello!',
+                id: group._id
+            })
+        })
+
+
         const presentusers = await UserModel.find({
             socketId:{
                 $nin: ['']
@@ -50,6 +69,7 @@ io.on("connection", function (socket) {
                 $nin:[currentUser.username]
             }
         })
+
         presentusers.forEach(user =>{
             socket.emit('onlineUser',{
                 img: user.picture,
@@ -76,9 +96,16 @@ io.on("connection", function (socket) {
             groupName: details.groupName,
         })
         newGroup.members.push(details.currentUserid)
+        const adminDetails = await UserModel.findOne({
+            _id: details.currentUserid
+        })
         await newGroup.save()
+
+        socket.emit('groupCreated',{
+            groupDetails: newGroup,
+            admin : adminDetails
+        })
     })
-    
     
 });
 // end of socket.io logic

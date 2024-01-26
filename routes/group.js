@@ -10,7 +10,11 @@ const groupSchema = mongoose.Schema({
     members:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'users'
-    }]
+    }], 
+        picture: {
+        type: String,
+            default: 'default.jpeg'
+    },
 
 
 

@@ -197,7 +197,16 @@
         } else
         recievemsg(elem.message)
       })
-    })
+      })
+
+      socket.on('groupCreated', msg => {
+        console.log(msg)
+        newChat(msg.groupDetails.picture,'', msg.groupDetails.groupName,msg.groupDetails._id)
+      });
+
+      socket.on('allGroup', msg => {
+        newChat(msg.img,msg.message, msg.name,msg.id)
+      });
   </script>
 </body>
 

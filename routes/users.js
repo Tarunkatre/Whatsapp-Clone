@@ -11,7 +11,7 @@ const userSchema = mongoose.Schema({
   },
   picture: {
     type : String,
-    default:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUbq3IrAVvxyjg_WQIhKZOBrq8X_H_91GlvSNjo1rxCSj3839RR3hsDWxPQaIMO1amuyM&usqp=CAU'
+    default:'default.jpeg'
   },
   socketId:{
     type: String,
