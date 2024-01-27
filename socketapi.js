@@ -12,13 +12,21 @@ io.on("connection", function (socket) {
     socket.on("message", async function(msg){
         const reqUser = await UserModel.findById(msg.reciever)
         
+        if(!reqUser){
+            const group = await GroupModel.findById(msg.reciever).populate('members')
+
+            if(!group) return;
+            
+        }
+
         await messageModel.create({
             message: msg.message,
             reciever: msg.reciever,
             sender: msg.sender
         })
 
-        io.to(reqUser.socketId).emit('golu', msg);
+        if(reqUser)
+        socket.to(reqUser.socketId).emit('golu', msg);
     })
 
     socket.on('chatdetails',async msgObject=>{
@@ -104,6 +112,24 @@ io.on("connection", function (socket) {
         socket.emit('groupCreated',{
             groupDetails: newGroup,
             admin : adminDetails
+        })
+    })
+
+    socket.on('addGroup',async (details)=>{
+        const Group = await GroupModel.findOne({
+            groupName: details.groupName,
+        })
+
+        const user = await UserModel.findOne({
+            _id:details.currentUserid
+        })
+        
+        Group.members.push(user._id)
+        await Group.save()
+
+        socket.emit('groupCreated', {
+            groupDetails: Group,
+            admin: user
         })
     })
     

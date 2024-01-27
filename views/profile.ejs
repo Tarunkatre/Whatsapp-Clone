@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wattsapp clone</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * {
@@ -63,7 +64,8 @@
                 <h5><%= user.username%></h5>
               </div>
             </div>
-            <div onclick="createGroup()" class="addGroup active:bg-slate-500 bg-white-500 w-10 h-10 ms-auto me-4 border-2 border-slate flex items-center justify-center text-lg rounded-full cursor-pointer hover:bg-black hover:text-white">+</div>
+            <div onclick="createGroup()" class="addGroup active:bg-slate-500 bg-white-500 w-10 h-10  ms-auto border-2 border-slate flex items-center justify-center text-lg rounded-full cursor-pointer hover:bg-black hover:text-white">+</div>
+            <div onclick="addGroup()" class="addGroup active:bg-slate-500 bg-white-500 w-10 h-10  ms-auto me-4 border-2 border-slate flex items-center justify-center text-lg rounded-full cursor-pointer hover:bg-black hover:text-white"><i class="ri-group-line"></i></div>
           </div>
           <div class="msgbox w-full h-auto">
           </div>
@@ -173,10 +175,20 @@
     }
 
     function createGroup(){
-      var groupName = prompt('Enter group name')
+      var groupName = prompt('Enter group name to create')
       if(!groupName) return;
       
       socket.emit('createGroup',{
+        groupName,
+        currentUserid
+      })
+    }
+
+    function addGroup(){
+      var groupName = prompt('Enter group name to join')
+      if(!groupName) return;
+      
+      socket.emit('addGroup',{
         groupName,
         currentUserid
       })
@@ -199,14 +211,14 @@
       })
       })
 
-      socket.on('groupCreated', msg => {
-        console.log(msg)
-        newChat(msg.groupDetails.picture,'', msg.groupDetails.groupName,msg.groupDetails._id)
-      });
+    socket.on('groupCreated', msg => {
+      newChat(msg.groupDetails.picture,'', msg.groupDetails.groupName,msg.groupDetails._id)
+    });
 
-      socket.on('allGroup', msg => {
-        newChat(msg.img,msg.message, msg.name,msg.id)
-      });
+    socket.on('allGroup', msg => {
+      newChat(msg.img,msg.message, msg.name,msg.id)
+    });
+
   </script>
 </body>
 
