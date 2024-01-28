@@ -21,7 +21,7 @@ io.on("connection", function (socket) {
 
         if (!reqUser) {
             const group = await GroupModel.findById(msg.reciever).populate('members')
-            // console.log(group,msg)
+            
             if (!group) {
                 return;
             }
