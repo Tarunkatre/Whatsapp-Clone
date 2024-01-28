@@ -164,61 +164,60 @@
 
     function conversation(img, name, id) {
       document.querySelector('.conv-img').style.display = 'initial';
-        document.querySelector('.conv-img').setAttribute('src', `../images/upload/${img}`);
-        document.querySelector('#conv-name').textContent = name;
-        document.querySelector('.chatarea').style.display = 'initial';
-        currentChatuserid = id;
-        socket.emit('chatdetails', {
-          secondUser: currentChatuserid,
-          firstUser: currentUserid
-        })
+      document.querySelector('.conv-img').setAttribute('src', `../images/upload/${img}`);
+      document.querySelector('#conv-name').textContent = name;
+      document.querySelector('.chatarea').style.display = 'initial';
+      currentChatuserid = id;
+      socket.emit('chatdetails', {
+        secondUser: currentChatuserid,
+        firstUser: currentUserid
+      })
     }
 
-    function createGroup(){
+    function createGroup() {
       var groupName = prompt('Enter group name to create')
-      if(!groupName) return;
-      
-      socket.emit('createGroup',{
+      if (!groupName) return;
+
+      socket.emit('createGroup', {
         groupName,
         currentUserid
       })
     }
 
-    function addGroup(){
+    function addGroup() {
       var groupName = prompt('Enter group name to join')
-      if(!groupName) return;
-      
-      socket.emit('addGroup',{
+      if (!groupName) return;
+
+      socket.emit('addGroup', {
         groupName,
         currentUserid
       })
     }
 
     socket.on('golu', msg => {
-    if(msg.sender == currentChatuserid)
-    recievemsg(msg.message);
+      if (msg.reciever == currentChatuserid)
+        recievemsg(msg.message);
     })
 
     socket.on('chatdetails', history => {
-      
+
       document.querySelector('.conversation').innerHTML = "";
 
       history.forEach(elem => {
         if (elem.sender == currentUserid) {
           showSentmessage(elem.message)
         } else
-        recievemsg(elem.message)
+          recievemsg(elem.message)
       })
-      })
+    })
 
     socket.on('groupCreated', msg => {
-      newChat(msg.groupDetails.picture,'', msg.groupDetails.groupName,msg.groupDetails._id)
+      newChat(msg.groupDetails.picture, '', msg.groupDetails.groupName, msg.groupDetails._id)
     });
 
     socket.on('allGroup', msg => {
-      newChat(msg.img,msg.message, msg.name,msg.id)
+      newChat(msg.img, msg.message, msg.name, msg.id)
     });
-
   </script>
 </body>
 

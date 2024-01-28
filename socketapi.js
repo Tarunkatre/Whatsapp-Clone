@@ -9,15 +9,9 @@ const socketapi = {
 // Add your socket.io logic here!
 io.on("connection", function (socket) {
 
-    socket.on("message", async function(msg){
-        const reqUser = await UserModel.findById(msg.reciever)
-        
-        if(!reqUser){
-            const group = await GroupModel.findById(msg.reciever).populate('members')
+    socket.on("message", async function (msg) {
 
-            if(!group) return;
-            
-        }
+        const reqUser = await UserModel.findById(msg.reciever)
 
         await messageModel.create({
             message: msg.message,
@@ -25,32 +19,54 @@ io.on("connection", function (socket) {
             sender: msg.sender
         })
 
-        if(reqUser)
-        socket.to(reqUser.socketId).emit('golu', msg);
+        if (!reqUser) {
+            const group = await GroupModel.findById(msg.reciever).populate('members')
+            // console.log(group,msg)
+            if (!group) {
+                return;
+            }
+
+            group.members.forEach(function (member) {
+                socket.to(member.socketId).emit('golu', msg)
+            })
+        }
+
+        if (reqUser)
+            socket.to(reqUser.socketId).emit('golu', msg);
     })
 
-    socket.on('chatdetails',async msgObject=>{
-        const allMessages = await messageModel.find({
-            $or:[
-                {
-                    sender: msgObject.firstUser, /* a */
-                    reciever: msgObject.secondUser    /* b */
-                },
-                {
-                    sender: msgObject.secondUser, /* b */
-                    reciever: msgObject.firstUser     /* a */
-                }
-            ]
-        })
-        socket.emit('chatdetails',allMessages)
-    })
-    
-    socket.on("server", async function(username){
+    socket.on('chatdetails', async msgObject => {
 
-        const currentUser = await UserModel.findOne({username:username});
+        const isUser = await UserModel.findById(msgObject.secondUser)
+        if (isUser) {
+            const allMessages = await messageModel.find({
+                $or: [
+                    {
+                        sender: msgObject.firstUser, /* a */
+                        reciever: msgObject.secondUser    /* b */
+                    },
+                    {
+                        sender: msgObject.secondUser, /* b */
+                        reciever: msgObject.firstUser     /* a */
+                    }
+                ]
+            })
+            socket.emit('chatdetails', allMessages)
+
+        } else {
+            const allMessages = await messageModel.find({ reciever: msgObject.secondUser })
+            socket.emit('chatdetails', allMessages)
+
+        }
+
+    })
+
+    socket.on("server", async function (username) {
+
+        const currentUser = await UserModel.findOne({ username: username });
         currentUser.socketId = socket.id;
         await currentUser.save();
-        
+
         const allGroup = await GroupModel.find({
             members: {
                 $in: [
@@ -60,7 +76,7 @@ io.on("connection", function (socket) {
         })
 
         allGroup.forEach(group => {
-            socket.emit('allGroup',{
+            socket.emit('allGroup', {
                 img: group.picture,
                 name: group.groupName,
                 message: 'hello!',
@@ -70,16 +86,16 @@ io.on("connection", function (socket) {
 
 
         const presentusers = await UserModel.find({
-            socketId:{
+            socketId: {
                 $nin: ['']
             },
-            username:{
-                $nin:[currentUser.username]
+            username: {
+                $nin: [currentUser.username]
             }
         })
 
-        presentusers.forEach(user =>{
-            socket.emit('onlineUser',{
+        presentusers.forEach(user => {
+            socket.emit('onlineUser', {
                 img: user.picture,
                 name: user.username,
                 message: 'hello!',
@@ -87,19 +103,19 @@ io.on("connection", function (socket) {
             })
         })
 
-        socket.broadcast.emit('onlineUser',{
+        socket.broadcast.emit('onlineUser', {
             img: currentUser.picture,
             name: currentUser.username,
             message: 'hello!',
-            id:currentUser._id
+            id: currentUser._id
         });
     })
 
-    socket.on('disconnect',async ()=>{
-        await UserModel.findOneAndUpdate({socketId:socket.id},{socketId:''})
+    socket.on('disconnect', async () => {
+        await UserModel.findOneAndUpdate({ socketId: socket.id }, { socketId: '' })
     })
 
-    socket.on('createGroup',async (details)=>{
+    socket.on('createGroup', async (details) => {
         const newGroup = await GroupModel.create({
             groupName: details.groupName,
         })
@@ -109,22 +125,24 @@ io.on("connection", function (socket) {
         })
         await newGroup.save()
 
-        socket.emit('groupCreated',{
+        socket.emit('groupCreated', {
             groupDetails: newGroup,
-            admin : adminDetails
+            admin: adminDetails
         })
     })
 
-    socket.on('addGroup',async (details)=>{
+    socket.on('addGroup', async (details) => {
         const Group = await GroupModel.findOne({
             groupName: details.groupName,
         })
 
         const user = await UserModel.findOne({
-            _id:details.currentUserid
+            _id: details.currentUserid
         })
-        
-        Group.members.push(user._id)
+
+        if (!Group.members.includes(user._id)) {
+            Group.members.push(details.currentUserid)
+        }
         await Group.save()
 
         socket.emit('groupCreated', {
@@ -132,7 +150,7 @@ io.on("connection", function (socket) {
             admin: user
         })
     })
-    
+
 });
 // end of socket.io logic
 
