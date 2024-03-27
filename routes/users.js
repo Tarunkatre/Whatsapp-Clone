@@ -1,7 +1,6 @@
 var mongoose = require('mongoose')
 var plm = require('passport-local-mongoose');
 
-mongoose.connect('mongodb://127.0.0.1:27017/Wattsapp')
 
 const userSchema = mongoose.Schema({
   username: String,

@@ -5,13 +5,17 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var expressSession = require('express-session');
 const flash = require('connect-flash')
+require('dotenv').config({ path: './.env' })
 
+require('./models/dbconfig').connect()
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const passport = require('passport');
 
 var app = express();
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
