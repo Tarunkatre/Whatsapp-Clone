@@ -44,6 +44,31 @@
       top: 50%;
       background-color: #ffffff;
       z-index: 9;
+      overflow-y: hidden;
+    }
+    @media (max-width:1080px) {
+      .left{
+        width: 100% !important;
+      }
+      .right{
+        width: 100% !important;
+      }
+      body{
+        overflow-x: auto;
+      }
+      .conversation{
+        height: 82% !important;
+      }
+      .addGroup{
+        height: 50% !important;
+        font-size: 12px !important;
+        margin: 10px;
+        border: 1px solid !important;
+      }
+      .nav .profile-pic{
+        height: 50% !important;
+        width: 18% !important;
+      }
     }
   </style>
 </head>

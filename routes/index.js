@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/newAccount', function (req, res, next) {
-  res.render('register');
+  res.render('register',{ error: req.flash('error') });
 });
 
 router.get('/profile',isLoggedIn,async function (req, res, next){
@@ -28,7 +28,7 @@ router.post('/register',upload.single('file'), (req, res, next) => {
     //user data here
     username: req.body.username,
     number: req.body.number,
-    picture: req.file.filename
+    picture: req.file ? req.file.filename : null
     //user data here
   };
   UserModel
@@ -40,7 +40,8 @@ router.post('/register',upload.single('file'), (req, res, next) => {
       });
     })
     .catch((err) => {
-      res.send(err);
+      req.flash('error', err.message)
+      res.redirect('/newAccount')
     });
 });
 
