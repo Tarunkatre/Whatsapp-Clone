@@ -28,7 +28,7 @@ router.post('/register',upload.single('file'), (req, res, next) => {
     //user data here
     username: req.body.username,
     number: req.body.number,
-    picture: req.file ? req.file.filename : null
+    picture: req.file ? req.file.filename : 'user.jpeg'
     //user data here
   };
   UserModel

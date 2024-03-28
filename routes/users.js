@@ -10,7 +10,7 @@ const userSchema = mongoose.Schema({
   },
   picture: {
     type : String,
-    default:'default.jpeg'
+    default:'user.jpeg'
   },
   socketId:{
     type: String,
